@@ -1,3 +1,15 @@
+function handleError(errorMessage) {
+    // Update the content of the modal body with the error message
+    document.getElementById('errorModalBody').innerHTML = errorMessage;
+
+    // Show the modal
+    $('#errorModal').modal('show');
+}
+
+function closeError(){
+    $('#errorModal').modal('hide');
+}
+
 document.getElementById('loginForm').addEventListener('submit', async function (event) {
     event.preventDefault(); // Prevent form submission
 
@@ -27,6 +39,7 @@ document.getElementById('loginForm').addEventListener('submit', async function (
             const token = data.token; // Assuming the token is in the 'token' field
             localStorage.setItem('token', token);
             localStorage.setItem('tokeExpired', Date.now());
+            localStorage.setItem('username', username);
             // Do something with the token, e.g., store it or redirect to another page
             document.getElementById('loginForm').style.display = 'none'; // Hide the login form
             document.getElementById('successMessage').style.display = 'block'; // Show the success message
@@ -47,23 +60,19 @@ function checkTokenExpired() {
     if (token && tokenExpired && Date.now() < twentyFourHoursLater) {
         document.getElementById('loginForm').style.display = 'none'; // Hide the login form
         document.getElementById('successMessage').style.display = 'block'; // Show the success message
+        document.getElementById('btnLogout').style.display = 'block';
 
     }
     else {
         document.getElementById('btnPurchasedInvoices').disabled = true;
+        document.getElementById('btndownloadpurchasedexcel').disabled = true;
         document.getElementById('btnSoldInvoices').disabled = true;
+        document.getElementById('btndownloadSaledexcel').disabled = true;
         document.getElementById('spRequiredLoginPurchase').style.display = 'block'; // Show the success message
         document.getElementById('spRequiredLoginSale').style.display = 'block'; // Show the success message
     }
 }
 
-function handleError(errorMessage) {
-    // Update the content of the modal body with the error message
-    document.getElementById('errorModalBody').innerHTML = errorMessage;
-
-    // Show the modal
-    $('#errorModal').modal('show');
-}
 
 checkTokenExpired();
 

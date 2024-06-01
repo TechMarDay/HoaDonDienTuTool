@@ -1,1 +1,496 @@
-const getKey=async(e,t)=>{let a=await fetch("https://beautiful-fudge-8b4728.netlify.app/",{method:"GET",headers:{"Content-Type":"application/json"}});if(!a.ok)throw Error("Network response was not ok");return await a.text()};function showMessage(e,t,a){let n=document.getElementById(`${a}Message`);n.innerHTML=e,n.className=t}function openTab(e,t){let a=document.getElementsByClassName("tabcontent");for(let n=0;n<a.length;n++)a[n].style.display="none";let o=document.getElementsByClassName("tablinks");for(let s=0;s<o.length;s++)o[s].className=o[s].className.replace(" active","");document.getElementById(t).style.display="block",e.currentTarget.className+=" active"}let selectedFile;async function renameFiles(){try{if(!selectedFile){showMessage("Please select a ZIP file.","error");return}$("#loadingModal").modal("show");let e=await JSZip.loadAsync(selectedFile);for(let t in e.files)if(t.endsWith(".zip")){let a=await e.files[t].async("blob"),n=await JSZip.loadAsync(a),o=t.split(".zip")[0];for(let s in n.files){if(s.endsWith("invoice.html")){let l=await n.files[s].async("string");n.file(`${o}.html`,l),delete n.files[s]}if(s.endsWith("details.js")){let i=await n.files[s].async("string");n.file(`${o}.js`,i),delete n.files[s]}if(s.endsWith("invoice.xml")){let d=await n.files[s].async("string");n.file(`${o}.xml`,d),delete n.files[s]}if(s.endsWith("sign-check.jpg")){let r=await n.files[s].async("string");n.file(`${o}.html`,r),delete n.files[s]}if(s.endsWith("viewinvoice-bg.jpg")){let h=await n.files[s].async("string");n.file(`${o}.jpg`,h),delete n.files[s]}}await e.file(t,await n.generateAsync({type:"blob"}))}await e.generateAsync({type:"blob"}).then(e=>{saveAs(e,"invoice_files_renamed.zip")}),$("#loadingModal").modal("hide"),showMessage("Đổi t\xean file th\xe0nh c\xf4ng","success")}catch(c){console.error("Error:",c),$("#loadingModal").modal("hide"),handleError("Xảy ra lỗi khi đổi t\xean file, vui l\xf2ng thử lại")}}function showMessage(e,t){let a=document.getElementById("message");a.innerHTML=e,a.className=t}function formatDate(e,t){let a=new Date(e),n=(a.getMonth()+1).toString().padStart(2,"0"),o=a.getDate().toString().padStart(2,"0"),s=a.getFullYear().toString();return`${o}/${n}/${s}T${t?"00:00:00":"23:59:59"}`}function removeAccents(e){return e.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g,"")}function formatDateInvoice(e){let t=new Date(e),a=String(t.getUTCDate()).padStart(2,"0"),n=String(t.getUTCMonth()+1).padStart(2,"0"),o=t.getUTCFullYear();return`${a}_${n}_${o}`}document.getElementById("fileInput").addEventListener("change",function(e){selectedFile=e.target.files[0]});let baseUrl="https://hoadondientu.gdt.gov.vn:30000/query/invoices/export-xml";const fetchAllPurchasedInvoicesData=async()=>{try{let e=localStorage.getItem("token"),t=document.getElementById("startDate").value,a=document.getElementById("endDate").value,n=formatDate(t,!0),o=formatDate(a),s=document.getElementById("kqkt").value,l=`https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=15&search=tdlap=ge=${n};tdlap=le=${o};ttxly==${s}`,i=1,d="";var r=await fetch(l,{method:"GET",headers:{Authorization:`Bearer ${e}`,"Content-Type":"application/json"}}).then(e=>{if(!e.ok)throw Error("Network response was not ok");return e.json()}).then(e=>{i=e.total,console.log(i)}).catch(e=>{handleError("Xảy ra lỗi khi tải h\xf3a đơn, vui l\xf2ng thử lại")});let h=`https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&search=tdlap=ge=${n};tdlap=le=${o};ttxly==${s}`,c=await fetch(h,{method:"GET",headers:{Authorization:`Bearer ${e}`,"Content-Type":"application/json"}});if(!c.ok)throw Error("Network response was not ok");let p=await c.json();d=p.state;let g=null,m=null,f="",u=[],w=[];if(null!=d&&""!=d&&(g=`https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&state=${d}&search=tdlap=ge=${n};tdlap=le=${o};ttxly==${s}`),g){let y=await fetch(g,{method:"GET",headers:{Authorization:`Bearer ${e}`,"Content-Type":"application/json"}});if(!y.ok)throw Error("Network response was not ok");if(f=(u=await y.json()).state,null!=f&&""!=f&&(m=`https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&state=${f}&search=tdlap=ge=${n};tdlap=le=${o};ttxly==${s}`),m){let k=await fetch(m,{method:"GET",headers:{Authorization:`Bearer ${e}`,"Content-Type":"application/json"}});if(!k.ok)throw Error("Network response was not ok");w=await k.json()}}let v=[...p.datas,...u.datas??[],...w.datas??[]],b=v.map(e=>({nbmst:e.nbmst,khhdon:e.khhdon,shdon:e.shdon,khmshdon:e.khmshdon,nbten:e.nbten,tdlap:e.tdlap})),E=b.map(e=>{let t=new URLSearchParams({nbmst:e.nbmst,khhdon:e.khhdon,shdon:e.shdon,khmshdon:e.khmshdon}),a=removeAccents(e.nbten),n=formatDateInvoice(e.tdlap);return{url:`${baseUrl}?${t.toString()}`,fileName:`${e.nbmst}_${a}_${e.shdon}_${n}`}});return E}catch(T){return handleError("Xảy ra lỗi khi tải h\xf3a đơn, vui l\xf2ng thử lại"),null}},fetchData=async(e,t)=>{let a=await fetch(e,{method:"GET",headers:{Authorization:`Bearer ${t}`}});return a.ok,a.blob()},fetchAndZipFilesForPurchasedInvoices=async()=>{try{$("#loadingModal1").modal("show");let e=localStorage.getItem("token"),t=await fetchAllPurchasedInvoicesData(),a=new JSZip;t.length;let n=1;for(let o of t){let s=await fetchData(o.url,e);a.file(`${n}_${o.fileName}.zip`,s),n++}let l=await a.generateAsync({type:"blob"}),i=document.createElement("a");i.href=URL.createObjectURL(l),i.download="invoice_files.zip",document.body.appendChild(i),i.click(),document.body.removeChild(i),$("#loadingModal1").modal("hide")}catch(d){console.error("Error:",d),$("#loadingModal1").modal("hide"),handleError("Xảy ra lỗi khi tải h\xf3a đơn, vui l\xf2ng thử lại")}},fetchAllSoldInvoicesData=async()=>{try{let e=localStorage.getItem("token"),t=document.getElementById("startDatesold").value,a=document.getElementById("endDatesold").value,n=formatDate(t,!0),o=formatDate(a),s=`https://hoadondientu.gdt.gov.vn:30000/query/invoices/sold?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=15&search=tdlap=ge=${n};tdlap=le=${o}`,l=1,i="";var d=await fetch(s,{method:"GET",headers:{Authorization:`Bearer ${e}`,"Content-Type":"application/json"}}).then(e=>{if(!e.ok)throw Error("Network response was not ok");return e.json()}).then(e=>{l=e.total,console.log(l)}).catch(e=>{console.error("Error fetching data:",e),handleError("Xảy ra lỗi khi tải h\xf3a đơn, vui l\xf2ng thử lại")});let r=`https://hoadondientu.gdt.gov.vn:30000/query/invoices/sold?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&search=tdlap=ge=${n};tdlap=le=${o}`,h=await fetch(r,{method:"GET",headers:{Authorization:`Bearer ${e}`,"Content-Type":"application/json"}});if(!h.ok)throw Error("Network response was not ok");let c=await h.json();i=c.state;let p=null,g=null,m="",f=[],u=[];if(null!=i&&""!=i&&(p=`https://hoadondientu.gdt.gov.vn:30000/query/invoices/sold?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&state=${i}&search=tdlap=ge=${n};tdlap=le=${o}`),p){let w=await fetch(p,{method:"GET",headers:{Authorization:`Bearer ${e}`,"Content-Type":"application/json"}});if(!w.ok)throw Error("Network response was not ok");if(m=(f=await w.json()).state,null!=m&&""!=m&&(g=`https://hoadondientu.gdt.gov.vn:30000/query/invoices/sold?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&state=${m}&search=tdlap=ge=${n};tdlap=le=${o}`),g){let y=await fetch(g,{method:"GET",headers:{Authorization:`Bearer ${e}`,"Content-Type":"application/json"}});if(!y.ok)throw Error("Network response was not ok");u=await y.json()}}let k=[...c.datas,...f.datas??[],...u.datas??[]],v=k.map(e=>({nbmst:e.nbmst,khhdon:e.khhdon,shdon:e.shdon,khmshdon:e.khmshdon,nbten:e.nbten,tdlap:e.tdlap})),b=v.map(e=>{let t=new URLSearchParams({nbmst:e.nbmst,khhdon:e.khhdon,shdon:e.shdon,khmshdon:e.khmshdon}),a=removeAccents(e.nbten),n=formatDateInvoice(e.tdlap);return{url:`${baseUrl}?${t.toString()}`,fileName:`${e.nbmst}_${a}_${e.shdon}_${n}`}});return b}catch(E){return console.error("There was a problem with the request:",E),handleError("Xảy ra lỗi khi tải h\xf3a đơn, vui l\xf2ng thử lại"),null}},fetchAndZipFilesForSoldInvoices=async()=>{try{$("#loadingModal2").modal("show");let e=localStorage.getItem("token"),t=await fetchAllSoldInvoicesData(),a=new JSZip;t.length;let n=1;for(let o of t){let s=await fetchData(o.url,e);a.file(`${n}_${o.fileName}.zip`,s),n++}let l=await a.generateAsync({type:"blob"}),i=document.createElement("a");i.href=URL.createObjectURL(l),i.download="invoice_files.zip",document.body.appendChild(i),i.click(),document.body.removeChild(i),$("#loadingModal2").modal("hide")}catch(d){console.error("Error:",d),$("#loadingModal2").modal("hide"),handleError("Xảy ra lỗi khi tải h\xf3a đơn, vui l\xf2ng thử lại")}};
+const getKey = async (url, token) => {
+    // Define the URL
+    const urlkey = 'https://beautiful-fudge-8b4728.netlify.app/';
+    const getKey = await fetch(urlkey, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+
+    if (!getKey.ok) {
+        throw new Error('Network response was not ok');
+    }
+
+    return await getKey.text();
+}
+
+function showMessage(message, type, tool) {
+    const messageDiv = document.getElementById(`${tool}Message`);
+    messageDiv.innerHTML = message;
+    messageDiv.className = type;
+}
+
+function openTab(evt, tabName) {
+    const tabcontent = document.getElementsByClassName('tabcontent');
+    for (let i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = 'none';
+    }
+
+    const tablinks = document.getElementsByClassName('tablinks');
+    for (let i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(' active', '');
+    }
+
+    document.getElementById(tabName).style.display = 'block';
+    evt.currentTarget.className += ' active';
+}
+
+let selectedFile;
+
+document.getElementById('fileInput').addEventListener('change', function (event) {
+    selectedFile = event.target.files[0];
+});
+
+async function renameFiles() {
+    try {
+        if (!selectedFile) {
+            showMessage('Please select a ZIP file.', 'error');
+            return;
+        }
+        $('#loadingModal').modal('show');
+        const zipFile = await JSZip.loadAsync(selectedFile);
+
+        for (const zipEntryName in zipFile.files) {
+            if (zipEntryName.endsWith('.zip')) {
+                const subZipFile = await zipFile.files[zipEntryName].async('blob');
+                const subZip = await JSZip.loadAsync(subZipFile);
+
+                const newNamePrefix = zipEntryName.split('.zip')[0];
+
+                for (const subZipEntryName in subZip.files) {
+                    if (subZipEntryName.endsWith('invoice.html')) {
+                        const content = await subZip.files[subZipEntryName].async('string');
+                        subZip.file(`${newNamePrefix}.html`, content);
+                        delete subZip.files[subZipEntryName];
+                    }
+
+                    if (subZipEntryName.endsWith('details.js')) {
+                        const content = await subZip.files[subZipEntryName].async('string');
+                        subZip.file(`${newNamePrefix}.js`, content);
+                        delete subZip.files[subZipEntryName];
+                    }
+
+                    if (subZipEntryName.endsWith('invoice.xml')) {
+                        const content = await subZip.files[subZipEntryName].async('string');
+                        subZip.file(`${newNamePrefix}.xml`, content);
+                        delete subZip.files[subZipEntryName];
+                    }
+
+                    if (subZipEntryName.endsWith('sign-check.jpg')) {
+                        const content = await subZip.files[subZipEntryName].async('string');
+                        subZip.file(`${newNamePrefix}.html`, content);
+                        delete subZip.files[subZipEntryName];
+                    }
+
+                    if (subZipEntryName.endsWith('viewinvoice-bg.jpg')) {
+                        const content = await subZip.files[subZipEntryName].async('string');
+                        subZip.file(`${newNamePrefix}.jpg`, content);
+                        delete subZip.files[subZipEntryName];
+                    }
+
+                }
+
+                await zipFile.file(zipEntryName, await subZip.generateAsync({ type: 'blob' }));
+            }
+        }
+
+        await zipFile.generateAsync({ type: 'blob' }).then(blob => {
+            saveAs(blob, 'invoice_files_renamed.zip');
+        });
+        $('#loadingModal').modal('hide');
+        showMessage('Đổi tên file thành công', 'success');
+    } catch (error) {
+        $('#loadingModal').modal('hide');
+        handleError("Xảy ra lỗi khi đổi tên file, vui lòng thử lại")
+    }
+}
+
+function showMessage(message, type) {
+    const messageDiv = document.getElementById('message');
+    messageDiv.innerHTML = message;
+    messageDiv.className = type;
+}
+function formatDate(dateString, isStart) {
+    const date = new Date(dateString);
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Month is 0-indexed
+    const day = date.getDate().toString().padStart(2, '0');
+    const year = date.getFullYear().toString();
+    const time = isStart ? '00:00:00' : '23:59:59';
+    return `${day}/${month}/${year}T${time}`;
+}
+
+function removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, ''); // remove white spaces
+}
+
+function formatDateInvoice(dateString) {
+    const date = new Date(dateString);
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const year = date.getUTCFullYear();
+
+    return `${day}_${month}_${year}`;
+}
+
+let baseUrl = 'https://hoadondientu.gdt.gov.vn:30000/query/invoices/export-xml';
+const fetchAllPurchasedInvoicesData = async () => {
+    try {
+
+        let token = localStorage.getItem('token');
+        // Get the values of the startDate and endDate input fields
+        const startDateValue = document.getElementById('startDate').value;
+        const endDateValue = document.getElementById('endDate').value;
+
+        // Format the dates to match the desired format (MM/DD/YYYY)
+        const formattedStartDate = formatDate(startDateValue, true);
+        const formattedEndDate = formatDate(endDateValue);
+
+        const ketQuaKiemTra = document.getElementById('kqkt').value;
+        const getUrl = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=15&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
+
+        let size = 1;
+        let state = '';
+        var response1 = await fetch(getUrl, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // Parse the response body as JSON
+            })
+            .then(data => {
+                size = data.total; // Assuming 'total' is a property in the JSON response
+                console.log(size);
+            })
+            .catch(error => {
+                handleError("Xảy ra lỗi khi tải hóa đơn, vui lòng thử lại")
+            });
+
+        const getUrl2 = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
+
+        const response = await fetch(getUrl2, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const responseData = await response.json();
+        state = responseData.state;
+
+        let getUrl3 = null;
+        let getUrl4 = null;
+        let state3 = '';
+        let responseData3 = [];
+        let responseData4 = [];
+
+        if (state != null && state != '') {
+            getUrl3 = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&state=${state}&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
+        }
+
+        if (getUrl3) {
+            const response3 = await fetch(getUrl3, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response3.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            responseData3 = await response3.json();
+            state3 = responseData3.state;
+
+
+            if (state3 != null && state3 != '') {
+                getUrl4 = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&state=${state3}&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
+            }
+
+            if (getUrl4) {
+                const response4 = await fetch(getUrl4, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response4.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                responseData4 = await response4.json();
+            }
+        }
+        const combinedData = [...responseData.datas, ...(responseData3.datas ?? []), ...(responseData4.datas ?? [])];
+        // Extracting specific properties from each object in the 'datas' array
+        const extractedData = combinedData.map(item => ({
+            nbmst: item.nbmst,
+            khhdon: item.khhdon,
+            shdon: item.shdon,
+            khmshdon: item.khmshdon,
+            nbten: item.nbten,
+            tdlap: item.tdlap
+        }));
+
+        const mappedData = extractedData.map(item => {
+            const urlParams = new URLSearchParams({
+                nbmst: item.nbmst,
+                khhdon: item.khhdon,
+                shdon: item.shdon,
+                khmshdon: item.khmshdon
+            });
+
+            const companyName = removeAccents(item.nbten);
+            const createdInvoiceDate = formatDateInvoice(item.tdlap);
+
+            return {
+                'url': `${baseUrl}?${urlParams.toString()}`,
+                'fileName': `${item.nbmst}_${companyName}_${item.shdon}_${createdInvoiceDate}`
+            };
+        });
+
+        return mappedData;
+    } catch (error) {
+        handleError("Xảy ra lỗi khi tải hóa đơn, vui lòng thử lại")
+        return null;
+    }
+};
+
+const fetchData = async (url, token) => {
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    if (!response.ok) {
+    }
+    return response.blob();
+};
+
+const fetchAndZipFilesForPurchasedInvoices = async () => {
+    // const key = await getKey();
+    // debugger;
+    // if (key != 'hehehehheeh222') return;
+    try {
+        $('#loadingModal1').modal('show');
+        let token = localStorage.getItem('token');
+
+        const datas = await fetchAllPurchasedInvoicesData();
+        const zip = new JSZip();
+        const totalItems = datas.length;
+
+        let index = 1;
+        for (const data of datas) {
+            const fileBlobs = await fetchData(data.url, token);
+            zip.file(`${index}_${data.fileName}.zip`, fileBlobs);
+            index++;
+        }
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(zipBlob);
+        link.download = 'invoice_files.zip';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        $('#loadingModal1').modal('hide');
+
+    } catch (error) {
+        $('#loadingModal1').modal('hide');
+        handleError("Xảy ra lỗi khi tải hóa đơn, vui lòng thử lại")
+    }
+};
+
+const fetchAllSoldInvoicesData = async () => {
+    try {
+
+        let token = localStorage.getItem('token');
+        // Get the values of the startDate and endDate input fields
+        const startDateValue = document.getElementById('startDatesold').value;
+        const endDateValue = document.getElementById('endDatesold').value;
+
+        // Format the dates to match the desired format (MM/DD/YYYY)
+        const formattedStartDate = formatDate(startDateValue, true);
+        const formattedEndDate = formatDate(endDateValue);
+
+        const getUrl = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/sold?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=15&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate}`;
+
+        let size = 1;
+        let state = '';
+        var response1 = await fetch(getUrl, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // Parse the response body as JSON
+            })
+            .then(data => {
+                size = data.total; // Assuming 'total' is a property in the JSON response
+                console.log(size);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+                handleError("Xảy ra lỗi khi tải hóa đơn, vui lòng thử lại")
+            });
+
+        const getUrl2 = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/sold?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate}`;
+
+        const response = await fetch(getUrl2, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const responseData = await response.json();
+        state = responseData.state;
+
+        let getUrl3 = null;
+        let getUrl4 = null;
+        let state3 = '';
+        let responseData3 = [];
+        let responseData4 = [];
+
+        if (state != null && state != '') {
+            getUrl3 = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/sold?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&state=${state}&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate}`;
+        }
+
+        if (getUrl3) {
+            const response3 = await fetch(getUrl3, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response3.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            responseData3 = await response3.json();
+            state3 = responseData3.state;
+
+
+            if (state3 != null && state3 != '') {
+                getUrl4 = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/sold?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&state=${state3}&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate}`;
+            }
+
+            if (getUrl4) {
+                const response4 = await fetch(getUrl4, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response4.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                responseData4 = await response4.json();
+            }
+        }
+        const combinedData = [...responseData.datas, ...(responseData3.datas ?? []), ...(responseData4.datas ?? [])];
+        // Extracting specific properties from each object in the 'datas' array
+        const extractedData = combinedData.map(item => ({
+            nbmst: item.nbmst,
+            khhdon: item.khhdon,
+            shdon: item.shdon,
+            khmshdon: item.khmshdon,
+            nbten: item.nbten,
+            tdlap: item.tdlap
+        }));
+
+        const mappedData = extractedData.map(item => {
+            const urlParams = new URLSearchParams({
+                nbmst: item.nbmst,
+                khhdon: item.khhdon,
+                shdon: item.shdon,
+                khmshdon: item.khmshdon
+            });
+
+            const companyName = removeAccents(item.nbten);
+            const createdInvoiceDate = formatDateInvoice(item.tdlap);
+
+            return {
+                'url': `${baseUrl}?${urlParams.toString()}`,
+                'fileName': `${item.nbmst}_${companyName}_${item.shdon}_${createdInvoiceDate}`
+            };
+        });
+
+        return mappedData;
+    } catch (error) {
+        console.error('There was a problem with the request:', error);
+        handleError("Xảy ra lỗi khi tải hóa đơn, vui lòng thử lại")
+        return null;
+    }
+};
+
+const fetchAndZipFilesForSoldInvoices = async () => {
+    // const key = await getKey();
+    // if (key != 'hehehehheeh222') return;
+
+    try {
+        $('#loadingModal2').modal('show');
+        let token = localStorage.getItem('token');
+
+        const datas = await fetchAllSoldInvoicesData();
+        const zip = new JSZip();
+        const totalItems = datas.length;
+
+        let index = 1;
+        for (const data of datas) {
+            const fileBlobs = await fetchData(data.url, token);
+            zip.file(`${index}_${data.fileName}.zip`, fileBlobs);
+            index++;
+        }
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(zipBlob);
+        link.download = 'invoice_files.zip';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        $('#loadingModal2').modal('hide');
+
+    } catch (error) {
+        $('#loadingModal2').modal('hide');
+        handleError("Xảy ra lỗi khi tải hóa đơn, vui lòng thử lại")
+    }
+};
+
