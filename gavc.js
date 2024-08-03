@@ -429,7 +429,7 @@ const fetchAllSoldInvoicesData = async () => {
             khhdon: item.khhdon,
             shdon: item.shdon,
             khmshdon: item.khmshdon,
-            nbten: item.nbten,
+            nbten: item.nmten,
             tdlap: item.tdlap
         }));
 
