@@ -429,7 +429,7 @@ const fetchAllSoldInvoicesData = async () => {
             khhdon: item.khhdon,
             shdon: item.shdon,
             khmshdon: item.khmshdon,
-            nbten: item.nmten,
+            nbten: item.nmten !== null ? item.nmten : item.nmtnmua,
             tdlap: item.tdlap
         }));
 
@@ -440,7 +440,6 @@ const fetchAllSoldInvoicesData = async () => {
                 shdon: item.shdon,
                 khmshdon: item.khmshdon
             });
-
             const companyName = removeAccents(item.nbten);
             const createdInvoiceDate = formatDateInvoice(item.tdlap);
 
