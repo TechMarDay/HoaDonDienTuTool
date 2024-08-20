@@ -302,7 +302,7 @@ const fetchAndZipFilesForPurchasedInvoices = async () => {
         let index = 1;
         for (const data of datas) {
             const fileBlobs = await fetchData(data.url, token);
-            await sleep(1000); // Delay for 1 second
+            await sleep(500); // Delay for 1 second
 
             zip.file(`${index}_${data.fileName}.zip`, fileBlobs);
             index++;
@@ -477,7 +477,7 @@ const fetchAndZipFilesForSoldInvoices = async () => {
         let index = 1;
         for (const data of datas) {
             const fileBlobs = await fetchData(data.url, token);
-            await sleep(1000); // Delay for 1 second
+            await sleep(500); // Delay for 1 second
             zip.file(`${index}_${data.fileName}.zip`, fileBlobs);
             index++;
         }
