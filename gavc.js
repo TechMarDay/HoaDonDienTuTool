@@ -133,6 +133,10 @@ function formatDateInvoice(dateString) {
     return `${day}_${month}_${year}`;
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 let baseUrl = 'https://hoadondientu.gdt.gov.vn:30000/query/invoices/export-xml';
 const fetchAllPurchasedInvoicesData = async () => {
     try {
@@ -171,6 +175,8 @@ const fetchAllPurchasedInvoicesData = async () => {
             .catch(error => {
                 handleError("Xảy ra lỗi khi tải hóa đơn, vui lòng thử lại")
             });
+
+        await sleep(1000); // Delay for 1 second
 
         const getUrl2 = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
 
@@ -214,7 +220,7 @@ const fetchAllPurchasedInvoicesData = async () => {
 
             responseData3 = await response3.json();
             state3 = responseData3.state;
-
+            await sleep(1000); // Delay for 1 second
 
             if (state3 != null && state3 != '') {
                 getUrl4 = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&state=${state3}&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
