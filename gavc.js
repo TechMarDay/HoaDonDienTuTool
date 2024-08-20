@@ -176,8 +176,6 @@ const fetchAllPurchasedInvoicesData = async () => {
                 handleError("Xảy ra lỗi khi tải hóa đơn, vui lòng thử lại")
             });
 
-        await sleep(1000); // Delay for 1 second
-
         const getUrl2 = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
 
         const response = await fetch(getUrl2, {
@@ -220,7 +218,6 @@ const fetchAllPurchasedInvoicesData = async () => {
 
             responseData3 = await response3.json();
             state3 = responseData3.state;
-            await sleep(1000); // Delay for 1 second
 
             if (state3 != null && state3 != '') {
                 getUrl4 = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&state=${state3}&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
@@ -305,6 +302,8 @@ const fetchAndZipFilesForPurchasedInvoices = async () => {
         let index = 1;
         for (const data of datas) {
             const fileBlobs = await fetchData(data.url, token);
+            await sleep(1000); // Delay for 1 second
+
             zip.file(`${index}_${data.fileName}.zip`, fileBlobs);
             index++;
         }
@@ -478,6 +477,7 @@ const fetchAndZipFilesForSoldInvoices = async () => {
         let index = 1;
         for (const data of datas) {
             const fileBlobs = await fetchData(data.url, token);
+            await sleep(1000); // Delay for 1 second
             zip.file(`${index}_${data.fileName}.zip`, fileBlobs);
             index++;
         }
