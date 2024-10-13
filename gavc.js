@@ -153,6 +153,10 @@ const fetchAllPurchasedInvoicesData = async () => {
         const ketQuaKiemTra = document.getElementById('kqkt').value;
         const getUrl = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=15&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
 
+        if (ketQuaKiemTra == 8) {
+            getUrl = `https://hoadondientu.gdt.gov.vn:30000/sco-query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=15&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
+        }
+
         let size = 1;
         let state = '';
         var response1 = await fetch(getUrl, {
@@ -177,6 +181,10 @@ const fetchAllPurchasedInvoicesData = async () => {
             });
 
         const getUrl2 = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
+        
+        if (ketQuaKiemTra == 8) {
+            getUrl2 = `https://hoadondientu.gdt.gov.vn:30000/sco-query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
+        }
 
         const response = await fetch(getUrl2, {
             method: 'GET',
@@ -201,6 +209,10 @@ const fetchAllPurchasedInvoicesData = async () => {
 
         if (state != null && state != '') {
             getUrl3 = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&state=${state}&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
+        
+            if (ketQuaKiemTra == 8) {
+                getUrl3 = `https://hoadondientu.gdt.gov.vn:30000/sco-query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&state=${state}&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
+            }
         }
 
         if (getUrl3) {
@@ -221,6 +233,10 @@ const fetchAllPurchasedInvoicesData = async () => {
 
             if (state3 != null && state3 != '') {
                 getUrl4 = `https://hoadondientu.gdt.gov.vn:30000/query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&state=${state3}&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
+            
+                if (ketQuaKiemTra == 8) {
+                    getUrl4 = `https://hoadondientu.gdt.gov.vn:30000/sco-query/invoices/purchase?sort=tdlap:desc,khmshdon:asc,shdon:desc&size=50&state=${state3}&search=tdlap=ge=${formattedStartDate};tdlap=le=${formattedEndDate};ttxly==${ketQuaKiemTra}`;
+                }
             }
 
             if (getUrl4) {
