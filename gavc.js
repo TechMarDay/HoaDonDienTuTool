@@ -138,6 +138,11 @@ function sleep(ms) {
 }
 
 let baseUrl = 'https://hoadondientu.gdt.gov.vn:30000/query/invoices/export-xml';
+
+if (ketQuaKiemTra == 8) {
+    baseUrl = 'https://hoadondientu.gdt.gov.vn:30000/sco-query/invoices/export-xml';
+}
+
 const fetchAllPurchasedInvoicesData = async () => {
     try {
 
