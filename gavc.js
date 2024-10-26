@@ -139,10 +139,7 @@ function sleep(ms) {
 
 let baseUrl = 'https://hoadondientu.gdt.gov.vn:30000/query/invoices/export-xml';
 
-const ketQuaKiemTra = document.getElementById('kqkt').value;
-if (ketQuaKiemTra == 8) {
-    baseUrl = 'https://hoadondientu.gdt.gov.vn:30000/sco-query/invoices/export-xml';
-}
+
 
 const fetchAllPurchasedInvoicesData = async () => {
     try {
@@ -271,6 +268,10 @@ const fetchAllPurchasedInvoicesData = async () => {
             nbten: item.nbten,
             tdlap: item.tdlap
         }));
+
+        if (ketQuaKiemTra == 8) {
+            baseUrl = 'https://hoadondientu.gdt.gov.vn:30000/sco-query/invoices/export-xml';
+        }
 
         const mappedData = extractedData.map(item => {
             const urlParams = new URLSearchParams({
