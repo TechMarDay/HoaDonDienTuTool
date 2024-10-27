@@ -272,6 +272,8 @@ const fetchAllPurchasedInvoicesData = async () => {
         if (ketQuaKiemTra == 8) {
             baseUrl = 'https://hoadondientu.gdt.gov.vn:30000/sco-query/invoices/export-xml';
         }
+        else
+            baseUrl = 'https://hoadondientu.gdt.gov.vn:30000/query/invoices/export-xml';
 
         const mappedData = extractedData.map(item => {
             const urlParams = new URLSearchParams({
